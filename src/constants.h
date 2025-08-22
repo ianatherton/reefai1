@@ -1,0 +1,119 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+#include <stdbool.h>
+#include <stdint.h>
+#include "raylib.h"
+
+// Dimensions and limits
+enum 
+{
+    SCREEN_WIDTH  = 1280,  // 720p width
+    SCREEN_HEIGHT = 720,   // 720p height
+
+    BOARD_SIZE        = 4,
+    MAX_STACK_HEIGHT  = 4,
+    MAX_HAND_SIZE     = 4,
+    CARD_DISPLAY_SIZE = 3,
+    DECK_MAX          = 60,
+
+    PLAYERS_MAX = 2
+};
+
+// Coral colors
+typedef enum 
+{
+    CORAL_NONE   = 0,
+    CORAL_YELLOW = 1,
+    CORAL_ORANGE = 2,
+    CORAL_PURPLE = 3,
+    CORAL_GREEN  = 4
+} CoralColor;
+
+// Board cell stack
+typedef struct {
+    CoralColor pieces[MAX_STACK_HEIGHT];
+    int height;
+} CoralStack;
+
+// Card (Phase 1 fields)
+typedef struct 
+{
+    CoralColor piece1;
+    CoralColor piece2;
+    int points;
+} Card;
+
+// Player
+typedef struct 
+{
+    CoralStack board[BOARD_SIZE][BOARD_SIZE];
+    Card hand[MAX_HAND_SIZE];
+    int handSize;
+    int points;
+    int id;
+} Player;
+
+// Game state
+typedef struct 
+            {
+    int playersCount;
+    Player players[PLAYERS_MAX];
+
+    Card deck[DECK_MAX];
+    int deckSize;
+
+    Card display[CARD_DISPLAY_SIZE];
+    int displayTokens[CARD_DISPLAY_SIZE];
+
+    int supplies[5]; // index by CoralColor (0 unused)
+
+    int currentPlayer;
+    bool gameEnded;
+} GameState;
+
+// Shared constants
+extern const int SUPPLY_PER_COLOR_2P;
+extern const int INITIAL_POINTS;
+
+extern const Color CORAL_COLOR_MAP[5];
+extern const char* CORAL_COLOR_NAME[5];
+
+// Assets (paths and filenames)
+extern const char* ASSET_PATH;                 // e.g., "resources/graphics/"
+extern const char* TEX_CORAL_FILE[5];          // index by CoralColor (0 unused)
+extern const char* TEX_CARD_BG_FILE;           // e.g., "card_bg.png"
+extern const char* TEX_DECK_BACK_FILE;         // e.g., "deck_back.png"
+extern const char* TEX_BOARD_CELL_FILE;        // e.g., "board_cell.png"
+extern const char* TEX_TOKEN_FILE;             // e.g., "token.png"
+
+// UI layout - Scaled down 50% for 720p display
+enum                        {
+    UI_CELL_SIZE   = 128,     // Each cell is 128x128 (50% of original 256x256)
+    UI_BOARD_SIZE  = 512,     // Total board is 512x512 (4x4 * 128)
+    UI_BOARD1_X    = 20,      // Player 1 board on left
+    UI_BOARD1_Y    = 80,
+    UI_BOARD2_X    = 560,     // Player 2 board on right (20 + 512 + 28)
+    UI_BOARD2_Y    = 80,
+
+    UI_CARD_W      = 80,      // Scaled down cards
+    UI_CARD_H      = 110,
+    UI_CARD_GAP    = 8,
+
+    UI_MARKET_X    = 20,      // Market below boards
+    UI_MARKET_Y    = 610,
+
+    // Deck position (to the right of the display)
+    UI_DECK_X      = UI_MARKET_X + (CARD_DISPLAY_SIZE * (UI_CARD_W + UI_CARD_GAP)) + 20,
+    UI_DECK_Y      = 610,
+
+    UI_HAND1_X     = 300,     // Hands in center area
+    UI_HAND1_Y     = 610,
+    UI_HAND2_X     = 600,
+    UI_HAND2_Y     = 610,
+
+    UI_SUPPLY_X    = 1100,    // Supplies on far right
+    UI_SUPPLY_Y    = 80
+};
+
+#endif

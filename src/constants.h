@@ -54,6 +54,14 @@ typedef struct
     int id;
 } Player;
 
+// Placement state for manual coral placement
+typedef struct {
+    bool active;                    // Whether we're in placement mode
+    CoralColor piecesToPlace[2];    // The two coral pieces to place
+    int piecesPlaced;              // How many pieces have been placed (0, 1, or 2)
+    int cardPoints;                // Points from the played card
+} PlacementState;
+
 // Game state
 typedef struct 
             {
@@ -70,6 +78,8 @@ typedef struct
 
     int currentPlayer;
     bool gameEnded;
+    
+    PlacementState placement;       // Manual placement state
 } GameState;
 
 // Shared constants

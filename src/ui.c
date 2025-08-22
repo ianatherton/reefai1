@@ -44,9 +44,6 @@ void UI_DrawBackground(void)
 
 void UI_DrawPlayerBoard(const Player* p, int ox, int oy, bool highlightValid, CoralColor placeColor)
 {
-    (void)highlightValid; // reserved for later phases
-    (void)placeColor;
-
     // Draw board background/grid with player-specific border color
     Color boardBorderColor = (p->id == 0) ? BLUE : RED;
     DrawRectangleLines(ox, oy, UI_BOARD_SIZE, UI_BOARD_SIZE, boardBorderColor);
@@ -56,11 +53,20 @@ void UI_DrawPlayerBoard(const Player* p, int ox, int oy, bool highlightValid, Co
             int x = ox + c * UI_CELL_SIZE;
             int y = oy + r * UI_CELL_SIZE;
 
-            // Draw cell border
-            DrawRectangleLines(x, y, UI_CELL_SIZE, UI_CELL_SIZE, GRAY);
-
             const CoralStack* s = &p->board[r][c];
             
+            // Highlight valid placement positions
+            if (highlightValid && s->height < MAX_STACK_HEIGHT) {
+                DrawRectangle(x, y, UI_CELL_SIZE, UI_CELL_SIZE, (Color){0, 255, 0, 50});
+            }
+            
+            // Draw cell border
+            Color cellBorderColor = GRAY;
+            if (highlightValid && s->height < MAX_STACK_HEIGHT) {
+                cellBorderColor = GREEN;
+            }
+            DrawRectangleLines(x, y, UI_CELL_SIZE, UI_CELL_SIZE, cellBorderColor);
+
             // Draw all coral pieces in the stack with transparency
             for (int stackLevel = 0; stackLevel < s->height; ++stackLevel) {
                 CoralColor color = s->pieces[stackLevel];
@@ -68,6 +74,15 @@ void UI_DrawPlayerBoard(const Player* p, int ox, int oy, bool highlightValid, Co
                 int offsetX = stackLevel * 4;
                 int offsetY = stackLevel * 4;
                 DrawCoralPiece(x + offsetX, y + offsetY, UI_CELL_SIZE - offsetX, color);
+            }
+            
+            // Preview the coral piece being placed
+            if (highlightValid && placeColor != CORAL_NONE && s->height < MAX_STACK_HEIGHT) {
+                int previewOffset = s->height * 4;
+                Color previewTint = CORAL_COLOR_MAP[placeColor];
+                previewTint.a = 100; // Semi-transparent preview
+                DrawRectangle(x + previewOffset + 10, y + previewOffset + 10, 
+                             UI_CELL_SIZE - previewOffset - 20, UI_CELL_SIZE - previewOffset - 20, previewTint);
             }
             
             // Draw stack height indicator if more than 1 (scaled text)
@@ -181,5 +196,16 @@ void UI_DrawSupplies(const GameState* g)
 void UI_DrawTopBar(const GameState* g)
 {
     DrawText(TextFormat("Current Player: %d", g->currentPlayer + 1), 20, 20, 18, BLACK);
-    DrawText("Actions: [1-3] Take Market | [D] Draw Deck (-1pt) | Play: [Q,W,E,R]", 20, 40, 12, BLACK);
+    
+    if (g->placement.active) {
+        CoralColor currentColor = g->placement.piecesToPlace[g->placement.piecesPlaced];
+        const char* colorName = CORAL_COLOR_NAME[currentColor];
+        DrawText(TextFormat("PLACEMENT MODE: Click to place %s coral (%d/2)", 
+                 colorName, g->placement.piecesPlaced + 1), 20, 40, 14, RED);
+        
+        // Draw a preview of the coral being placed
+        DrawCoralPiece(400, 35, 20, currentColor);
+    } else {
+        DrawText("Actions: [1-3] Take Market | [D] Draw Deck (-1pt) | Play: [Q,W,E,R]", 20, 40, 12, BLACK);
+    }
 }

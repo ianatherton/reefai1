@@ -91,19 +91,18 @@ void UI_DrawPlayerBoard(const Player* p, int ox, int oy, bool highlightValid, Co
             // Draw all coral pieces in the stack with transparency
             for (int stackLevel = 0; stackLevel < s->height; ++stackLevel) {
                 CoralColor color = s->pieces[stackLevel];
-                // Offset each stacked piece slightly to show layering (scaled down)
-                int offsetX = stackLevel * 4;
-                int offsetY = stackLevel * 4;
-                DrawCoralPiece(x + offsetX, y + offsetY, UI_CELL_SIZE - offsetX, color);
+                // Offset each stacked piece by 20 pixels to show layering clearly
+                int offsetY = stackLevel * 20;
+                DrawCoralPiece(x, y - offsetY, UI_CELL_SIZE, color);
             }
             
             // Preview the coral piece being placed
             if (highlightValid && placeColor != CORAL_NONE && s->height < MAX_STACK_HEIGHT) {
-                int previewOffset = s->height * 4;
+                int previewOffsetY = s->height * 20;
                 Color previewTint = CORAL_COLOR_MAP[placeColor];
                 previewTint.a = 100; // Semi-transparent preview
-                DrawRectangle(x + previewOffset + 10, y + previewOffset + 10, 
-                             UI_CELL_SIZE - previewOffset - 20, UI_CELL_SIZE - previewOffset - 20, previewTint);
+                DrawRectangle(x + 10, y - previewOffsetY + 10, 
+                             UI_CELL_SIZE - 20, UI_CELL_SIZE - 20, previewTint);
             }
             
             // Draw stack height indicator if more than 1 (scaled text)

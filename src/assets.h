@@ -18,6 +18,12 @@ typedef struct {
 
     Texture2D token;
     bool tokenLoaded;
+
+    Texture2D gameboard;
+    bool gameboardLoaded;
+
+    Font customFont;
+    bool fontLoaded;
 } Assets;
 
 extern Assets gAssets;

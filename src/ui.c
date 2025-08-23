@@ -1,6 +1,19 @@
 #include "ui.h"
 #include "assets.h"
+#include "constants.h"
 #include <stdio.h>
+
+// Helper function to draw text with custom font and 10% larger size
+static void DrawTextCustom(const char* text, int posX, int posY, int baseFontSize, Color color)
+{
+    int scaledSize = (int)(baseFontSize * 1.3f); // 10% larger
+    if (gAssets.fontLoaded) {
+        DrawTextEx(gAssets.customFont, text, (Vector2){posX, posY}, scaledSize, 1.0f, color);
+    } else {
+        // Fallback to default font with scaled size
+        DrawText(text, posX, posY, scaledSize, color);
+    }
+}
 
 static void DrawCoralPiece(int x, int y, int size, CoralColor color)
 {
@@ -34,7 +47,7 @@ static void DrawPointToken(int x, int y, int points)
     // Draw the number centered in the circle (scaled)
     const char* text = TextFormat("%d", points);
     int textWidth = MeasureText(text, 10);
-    DrawText(text, x + radius - textWidth/2, y + radius - 5, 10, BLACK);
+    DrawTextCustom(text, x + radius - textWidth/2, y + radius - 5, 10, BLACK);
 }
 
 void UI_DrawBackground(void)
@@ -44,6 +57,14 @@ void UI_DrawBackground(void)
 
 void UI_DrawPlayerBoard(const Player* p, int ox, int oy, bool highlightValid, CoralColor placeColor)
 {
+    // Draw gameboard background texture if available (scaled from 1024x1024 to 512x512)
+    if (gAssets.gameboardLoaded) {
+        Rectangle src = { 0, 0, (float)gAssets.gameboard.width, (float)gAssets.gameboard.height };
+        Rectangle dst = { (float)ox, (float)oy, (float)UI_BOARD_SIZE, (float)UI_BOARD_SIZE };
+        Vector2 origin = { 0, 0 };
+        DrawTexturePro(gAssets.gameboard, src, dst, origin, 0.0f, WHITE);
+    }
+    
     // Draw board background/grid with player-specific border color
     Color boardBorderColor = (p->id == 0) ? BLUE : RED;
     DrawRectangleLines(ox, oy, UI_BOARD_SIZE, UI_BOARD_SIZE, boardBorderColor);
@@ -87,7 +108,7 @@ void UI_DrawPlayerBoard(const Player* p, int ox, int oy, bool highlightValid, Co
             
             // Draw stack height indicator if more than 1 (scaled text)
             if (s->height > 1) {
-                DrawText(TextFormat("%d", s->height), x + UI_CELL_SIZE - 20, y + 5, 12, BLACK);
+                DrawTextCustom(TextFormat("%d", s->height), x + UI_CELL_SIZE - 20, y + 5, 12, BLACK);
             }
         }
     }
@@ -95,8 +116,8 @@ void UI_DrawPlayerBoard(const Player* p, int ox, int oy, bool highlightValid, Co
     // Draw player board title with background to make ownership clear (scaled)
     Color playerColor = (p->id == 0) ? BLUE : RED;
     DrawRectangle(ox - 5, oy - 30, 200, 20, (Color){playerColor.r, playerColor.g, playerColor.b, 50});
-    DrawText(TextFormat("Player %d Board", p->id + 1), ox, oy - 25, 16, playerColor);
-    DrawText(TextFormat("Points: %d", p->points), ox, oy - 10, 14, BLACK);
+    DrawTextCustom(TextFormat("Player %d Board", p->id + 1), ox, oy - 25, 16, playerColor);
+    DrawTextCustom(TextFormat("Points: %d", p->points), ox, oy - 10, 14, BLACK);
 }
 
 void UI_DrawCard(const Card* c, int x, int y)
@@ -116,12 +137,12 @@ void UI_DrawCard(const Card* c, int x, int y)
     DrawCoralPiece(px, py, 16, c->piece1);
     DrawCoralPiece(px + 20, py, 16, c->piece2);
 
-    DrawText(TextFormat("%d", c->points), x + UI_CARD_W - 16, y + UI_CARD_H - 16, 12, BLACK);
+    DrawTextCustom(TextFormat("%d", c->points), x + UI_CARD_W - 16, y + UI_CARD_H - 16, 12, BLACK);
 }
 
 void UI_DrawMarket(const GameState* g)
 {
-    DrawText("Market", UI_MARKET_X, UI_MARKET_Y - 18, 16, BLACK);
+    DrawTextCustom("Market", UI_MARKET_X, UI_MARKET_Y - 18, 16, BLACK);
 
     for (int i = 0; i < CARD_DISPLAY_SIZE; ++i) {
         int x = UI_MARKET_X + i * (UI_CARD_W + UI_CARD_GAP);
@@ -137,7 +158,7 @@ void UI_DrawMarket(const GameState* g)
         }
 
         // Hotkey label (scaled)
-        DrawText(TextFormat("%d", i + 1), x + 4, y + 4, 12, RED);
+        DrawTextCustom(TextFormat("%d", i + 1), x + 4, y + 4, 12, RED);
     }
 }
 
@@ -155,7 +176,7 @@ void UI_DrawDeck(const GameState* g)
     } else {
         DrawRectangle(x, y, UI_CARD_W, UI_CARD_H, (Color){ 80, 80, 80, 255 });
         DrawRectangleLines(x, y, UI_CARD_W, UI_CARD_H, BLACK);
-        DrawText("DECK", x + 22, y + 44, 14, RAYWHITE);
+        DrawTextCustom("DECK", x + 22, y + 44, 14, RAYWHITE);
     }
 }
 
@@ -164,7 +185,7 @@ void UI_DrawHand(const Player* p, int x, int y, int selectedIndex)
     // Highlight current player's hand title (scaled)
     Color titleColor = (selectedIndex == -1) ? RED : BLACK;
     const char* turnIndicator = (selectedIndex == -1) ? " (TURN)" : "";
-    DrawText(TextFormat("P%d Hand%s", p->id + 1, turnIndicator), x, y - 18, 14, titleColor);
+    DrawTextCustom(TextFormat("P%d Hand%s", p->id + 1, turnIndicator), x, y - 18, 14, titleColor);
     
     for (int i = 0; i < p->handSize; ++i) {
         int cx = x + i * (UI_CARD_W + UI_CARD_GAP);
@@ -176,36 +197,36 @@ void UI_DrawHand(const Player* p, int x, int y, int selectedIndex)
         // Only show hotkeys for current player (scaled)
         if (selectedIndex == -1) {
             const char* key = (i == 0) ? "Q" : (i == 1) ? "W" : (i == 2) ? "E" : (i == 3) ? "R" : "";
-            DrawText(key, cx + 4, y + 4, 12, RED);
+            DrawTextCustom(key, cx + 4, y + 4, 12, RED);
         }
     }
 }
 
 void UI_DrawSupplies(const GameState* g)
 {
-    DrawText("Supplies", UI_SUPPLY_X, UI_SUPPLY_Y - 18, 16, BLACK);
+    DrawTextCustom("Supplies", UI_SUPPLY_X, UI_SUPPLY_Y - 18, 16, BLACK);
 
     for (int i = 1; i <= 4; ++i) {
         int x = UI_SUPPLY_X + (i - 1) * 28;
         int y = UI_SUPPLY_Y;
         DrawCoralPiece(x, y, 20, (CoralColor)i);
-        DrawText(TextFormat("%d", g->supplies[i]), x + 4, y + 22, 12, BLACK);
+        DrawTextCustom(TextFormat("%d", g->supplies[i]), x + 4, y + 22, 12, BLACK);
     }
 }
 
 void UI_DrawTopBar(const GameState* g)
 {
-    DrawText(TextFormat("Current Player: %d", g->currentPlayer + 1), 20, 20, 18, BLACK);
+    DrawTextCustom(TextFormat("Current Player: %d", g->currentPlayer + 1), 20, 20, 18, BLACK);
     
     if (g->placement.active) {
         CoralColor currentColor = g->placement.piecesToPlace[g->placement.piecesPlaced];
         const char* colorName = CORAL_COLOR_NAME[currentColor];
-        DrawText(TextFormat("PLACEMENT MODE: Click to place %s coral (%d/2)", 
+        DrawTextCustom(TextFormat("PLACEMENT MODE: Click to place %s coral (%d/2)", 
                  colorName, g->placement.piecesPlaced + 1), 20, 40, 14, RED);
         
         // Draw a preview of the coral being placed
         DrawCoralPiece(400, 35, 20, currentColor);
     } else {
-        DrawText("Actions: [1-3] Take Market | [D] Draw Deck (-1pt) | Play: [Q,W,E,R]", 20, 40, 12, BLACK);
+        DrawTextCustom("Actions: [1-3] Take Market | [D] Draw Deck (-1pt) | Play: [Q,W,E,R]", 20, 40, 12, BLACK);
     }
 }

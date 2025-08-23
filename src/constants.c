@@ -27,6 +27,10 @@ const char* TEX_CARD_BG_FILE    = "card_bg.png";
 const char* TEX_DECK_BACK_FILE  = "deck_back.png";
 const char* TEX_BOARD_CELL_FILE = "board_cell.png";
 const char* TEX_TOKEN_FILE      = "point_token_1.png"; // use 1-point token as generic token icon
+const char* TEX_GAMEBOARD_FILE  = "gameboard.png";
+
+const char* FONT_PATH = "resources/fonts/";
+const char* FONT_FILE = "Lexend-Bold.ttf";
 
 const char* CORAL_COLOR_NAME[5] = {
     "None",

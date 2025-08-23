@@ -96,6 +96,9 @@ extern const char* TEX_CARD_BG_FILE;           // e.g., "card_bg.png"
 extern const char* TEX_DECK_BACK_FILE;         // e.g., "deck_back.png"
 extern const char* TEX_BOARD_CELL_FILE;        // e.g., "board_cell.png"
 extern const char* TEX_TOKEN_FILE;             // e.g., "token.png"
+extern const char* TEX_GAMEBOARD_FILE;         // e.g., "gameboard.png"
+extern const char* FONT_PATH;                  // e.g., "resources/fonts/"
+extern const char* FONT_FILE;                  // e.g., "Lexend-Bold.ttf"
 
 // UI layout - Scaled down 50% for 720p display
 enum                        {

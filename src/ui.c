@@ -228,16 +228,17 @@ void UI_DrawDeck(const GameState* g)
         DrawTextCustom("DECK", x + 22, y + 44, 14, RAYWHITE);
     }
     
-    // Draw face-up card from top of deck next to the deck pile
+    // Draw face-up card from top of deck 20px above the deck pile for stacking effect
     if (g->deckSize > 0) {
-        int faceUpX = x + UI_CARD_W + UI_CARD_GAP;
-        UI_DrawCard(&g->deck[g->deckSize - 1], faceUpX, y);
+        int faceUpX = x;
+        int faceUpY = y - 20;  // 20px above deck pile
+        UI_DrawCard(&g->deck[g->deckSize - 1], faceUpX, faceUpY);
         
         // Draw hotkey label for deck card
-        DrawTextCustom("D", faceUpX + 4, y + 4, 12, RED);
+        DrawTextCustom("D", faceUpX + 4, faceUpY + 4, 12, RED);
         
         // Show cost indicator
-        DrawTextCustom("(-1pt)", faceUpX + 4, y + UI_CARD_H - 16, 10, RED);
+        DrawTextCustom("(-1pt)", faceUpX + 4, faceUpY + UI_CARD_H - 16, 10, RED);
     }
 }
 

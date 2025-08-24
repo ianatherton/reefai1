@@ -149,9 +149,9 @@ enum                        {
     UI_MARKET_X    = 20,      // Market below boards
     UI_MARKET_Y    = 610,
 
-    // Deck position (better positioned for visibility)
-    UI_DECK_X      = 420,     // Between boards and market
-    UI_DECK_Y      = 500,
+    // Deck position (same row as market)
+    UI_DECK_X      = UI_MARKET_X + (CARD_DISPLAY_SIZE * (UI_CARD_W + UI_CARD_GAP)) + 20,
+    UI_DECK_Y      = UI_MARKET_Y,
 
     UI_HAND1_X     = 20,      // Player 1 hand under their board
     UI_HAND1_Y     = 480,

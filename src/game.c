@@ -1,7 +1,10 @@
 #include "game.h"
 #include "cards.h"
+#include "constants.h"
+#include "patterns.h"
 #include "ui.h"
 #include "assets.h"
+#include <stdio.h>
 
 // Forward declarations
 static void NextPlayer(GameState* g);
@@ -64,14 +67,18 @@ static void StartPlacement(GameState* g, Card card)
     g->placement.piecesToPlace[0] = card.piece1;
     g->placement.piecesToPlace[1] = card.piece2;
     g->placement.piecesPlaced = 0;
-    g->placement.cardPoints = card.points;
+    g->placement.cardPoints = card.pattern.pointValue;
+    g->placement.scoringPattern = card.pattern;
 }
 
 static void FinishPlacement(GameState* g)
 {
     if (g->placement.active && g->placement.piecesPlaced == 2) {
-        // Award points and end turn
-        g->players[g->currentPlayer].points += g->placement.cardPoints;
+        // Score the pattern on the current player's board
+        Player* currentPlayer = &g->players[g->currentPlayer];
+        int earnedPoints = ScorePattern(currentPlayer, &g->placement.scoringPattern);
+        currentPlayer->points += earnedPoints;
+        
         g->placement.active = false;
         CheckEnd(g);
         if (!g->gameEnded) {

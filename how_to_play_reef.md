@@ -34,7 +34,11 @@ The second option is to take the top card of the face-down deck. This action, ho
 A hand limit of four cards is in effect at all times. If a player begins their turn with four cards in hand, they are restricted from taking a new card and must instead perform the "play a card" action. This rule prevents players from hoarding cards and forces them to execute their plans, maintaining a fluid pace to the game.
 
 Play a Card
-A player choosing this action plays one card from their hand face up into their personal discard pile. This action is a mandatory two-step process, with the steps always performed in the same order. First, the player must take the two coral pieces shown at the top of the played card from the central supplies and place them on their board. These pieces can be placed on any empty space or stacked on top of existing coral. The only restriction is a strict height limit of four pieces per stack. Once a piece is placed, it cannot be moved or removed for the remainder of the game.
+A player choosing this action plays one card from their hand face up into their personal discard pile. This action is a mandatory two-step process, with the steps always performed in the same order. 
+
+**Card Structure**: Each card has two parts. The top tells you what new reef pieces you can collect and then add onto your reef. The bottom shows you the color combination you need in order to score points that round, after you've added the new pieces first. And the highest scores go to the combos that require you to have reef pieces stacked on top of each other.
+
+First, the player must take the two coral pieces shown at the top of the played card from the central supplies and place them on their board. These pieces can be placed on any empty space or stacked on top of existing coral. The only restriction is a strict height limit of four pieces per stack. Once a piece is placed, it cannot be moved or removed for the remainder of the game.
 
 After placing the coral pieces, the player then scores their reef based on the pattern at the bottom of the card they just played. If the pattern is not present on their board, no points are awarded. However, if the pattern is found, the player collects the points shown on the card for each time the pattern appears, multiplying their score if the pattern is present in multiple, non-overlapping instances.
 

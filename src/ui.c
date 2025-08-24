@@ -1,6 +1,7 @@
 #include "ui.h"
 #include "assets.h"
 #include "constants.h"
+#include "patterns.h"
 #include <stdio.h>
 
 // Helper function to draw text with custom font and 10% larger size
@@ -91,23 +92,23 @@ void UI_DrawPlayerBoard(const Player* p, int ox, int oy, bool highlightValid, Co
             // Draw all coral pieces in the stack with transparency
             for (int stackLevel = 0; stackLevel < s->height; ++stackLevel) {
                 CoralColor color = s->pieces[stackLevel];
-                // Offset each stacked piece by 20 pixels to show layering clearly
-                int offsetY = stackLevel * 20;
+                // Offset each stacked piece by 15 pixels to show layering clearly (scaled for smaller cells)
+                int offsetY = stackLevel * 15;
                 DrawCoralPiece(x, y - offsetY, UI_CELL_SIZE, color);
             }
             
             // Preview the coral piece being placed
             if (highlightValid && placeColor != CORAL_NONE && s->height < MAX_STACK_HEIGHT) {
-                int previewOffsetY = s->height * 20;
+                int previewOffsetY = s->height * 15;
                 Color previewTint = CORAL_COLOR_MAP[placeColor];
                 previewTint.a = 100; // Semi-transparent preview
-                DrawRectangle(x + 10, y - previewOffsetY + 10, 
-                             UI_CELL_SIZE - 20, UI_CELL_SIZE - 20, previewTint);
+                DrawRectangle(x + 8, y - previewOffsetY + 8, 
+                             UI_CELL_SIZE - 16, UI_CELL_SIZE - 16, previewTint);
             }
             
-            // Draw stack height indicator if more than 1 (scaled text)
+            // Draw stack height indicator if more than 1 (bigger font for visibility)
             if (s->height > 1) {
-                DrawTextCustom(TextFormat("%d", s->height), x + UI_CELL_SIZE - 20, y + 5, 12, BLACK);
+                DrawTextCustom(TextFormat("%d", s->height), x + UI_CELL_SIZE - 18, y + 5, 16, BLACK);
             }
         }
     }
@@ -117,6 +118,43 @@ void UI_DrawPlayerBoard(const Player* p, int ox, int oy, bool highlightValid, Co
     DrawRectangle(ox - 5, oy - 30, 200, 20, (Color){playerColor.r, playerColor.g, playerColor.b, 50});
     DrawTextCustom(TextFormat("Player %d Board", p->id + 1), ox, oy - 25, 16, playerColor);
     DrawTextCustom(TextFormat("Points: %d", p->points), ox, oy - 10, 14, BLACK);
+}
+
+static void DrawScoringPattern(const ScoringPattern* pattern, int x, int y, int cellSize)
+{
+    // Draw the scoring pattern in the bottom half of the card
+    for (int r = 0; r < pattern->height; r++) {
+        for (int c = 0; c < pattern->width; c++) {
+            const PatternCell* cell = &pattern->cells[r][c];
+            
+            // Skip empty pattern cells
+            if (cell->color == CORAL_NONE && cell->exactHeight == 0 && cell->minHeight == 0 && !cell->isWild) {
+                continue;
+            }
+            
+            int cellX = x + c * cellSize;
+            int cellY = y + r * cellSize;
+            
+            // Draw pattern cell background
+            Color cellColor = LIGHTGRAY;
+            if (cell->color != CORAL_NONE) {
+                cellColor = CORAL_COLOR_MAP[cell->color];
+                cellColor.a = 150; // Semi-transparent
+            } else if (cell->isWild) {
+                cellColor = (Color){128, 128, 128, 150}; // Gray for wild
+            }
+            
+            DrawRectangle(cellX, cellY, cellSize, cellSize, cellColor);
+            DrawRectangleLines(cellX, cellY, cellSize, cellSize, BLACK);
+            
+            // Draw height indicator if specified
+            if (cell->exactHeight > 0) {
+                DrawTextCustom(TextFormat("%d", cell->exactHeight), cellX + 2, cellY + 2, 8, BLACK);
+            } else if (cell->minHeight > 0) {
+                DrawTextCustom(TextFormat("%d+", cell->minHeight), cellX + 2, cellY + 2, 8, BLACK);
+            }
+        }
+    }
 }
 
 void UI_DrawCard(const Card* c, int x, int y)
@@ -131,12 +169,24 @@ void UI_DrawCard(const Card* c, int x, int y)
         DrawRectangleLines(x, y, UI_CARD_W, UI_CARD_H, BLACK);
     }
 
+    // Draw dividing line between top and bottom halves
+    int midY = y + UI_CARD_H / 2;
+    DrawLine(x + 4, midY, x + UI_CARD_W - 4, midY, BLACK);
+    
+    // Top half: Coral pieces to collect
     int px = x + 8;
     int py = y + 8;
     DrawCoralPiece(px, py, 16, c->piece1);
     DrawCoralPiece(px + 20, py, 16, c->piece2);
 
-    DrawTextCustom(TextFormat("%d", c->points), x + UI_CARD_W - 16, y + UI_CARD_H - 16, 12, BLACK);
+    // Bottom half: Scoring pattern
+    int patternX = x + 8;
+    int patternY = midY + 8;
+    int patternCellSize = 12; // Small cells for pattern display
+    DrawScoringPattern(&c->pattern, patternX, patternY, patternCellSize);
+    
+    // Points value in bottom right
+    DrawTextCustom(TextFormat("%d", c->pattern.pointValue), x + UI_CARD_W - 16, y + UI_CARD_H - 16, 12, BLACK);
 }
 
 void UI_DrawMarket(const GameState* g)
@@ -163,10 +213,10 @@ void UI_DrawMarket(const GameState* g)
 
 void UI_DrawDeck(const GameState* g)
 {
-    (void)g;
     int x = UI_DECK_X;
     int y = UI_DECK_Y;
 
+    // Draw deck back pile
     if (gAssets.deckBackLoaded) {
         Rectangle src = { 0, 0, (float)gAssets.deckBack.width, (float)gAssets.deckBack.height };
         Rectangle dst = { (float)x, (float)y, (float)UI_CARD_W, (float)UI_CARD_H };
@@ -176,6 +226,18 @@ void UI_DrawDeck(const GameState* g)
         DrawRectangle(x, y, UI_CARD_W, UI_CARD_H, (Color){ 80, 80, 80, 255 });
         DrawRectangleLines(x, y, UI_CARD_W, UI_CARD_H, BLACK);
         DrawTextCustom("DECK", x + 22, y + 44, 14, RAYWHITE);
+    }
+    
+    // Draw face-up card from top of deck next to the deck pile
+    if (g->deckSize > 0) {
+        int faceUpX = x + UI_CARD_W + UI_CARD_GAP;
+        UI_DrawCard(&g->deck[g->deckSize - 1], faceUpX, y);
+        
+        // Draw hotkey label for deck card
+        DrawTextCustom("D", faceUpX + 4, y + 4, 12, RED);
+        
+        // Show cost indicator
+        DrawTextCustom("(-1pt)", faceUpX + 4, y + UI_CARD_H - 16, 10, RED);
     }
 }
 
